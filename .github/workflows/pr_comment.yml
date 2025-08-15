@@ -16,6 +16,6 @@ jobs:
           python scripts/progress/update_progress.py --write
           python scripts/progress/pr_comment.py > pr_comment.md
       - name: Create or update comment
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v3
         with:
           filePath: pr_comment.md
