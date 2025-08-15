@@ -4,9 +4,9 @@ Defines tracking and gating for contract function gas usage.
 
 ## Approach
 
-1. Collect gas per critical function (update_prediction, execute_trade) via test harness instrumentation (TBD).
-2. Store snapshot in `docs/perf/gas_snapshot.json` each CI run.
-3. Compare against `gas_baselines.json`; fail if > threshold_percent increase (default 5%).
+1. Collect gas per critical function (update_prediction, execute_trade) via parsing standard `scarb test` output (heuristic) using `scripts/contracts/extract_gas.py`.
+2. Store snapshot in `docs/perf/gas_snapshot.json` each CI run (see CI job `gas-snapshot`).
+3. Compare against `gas_baselines.json` (run `make gas-compare`); fail if > threshold_percent increase (default 5%).
 
 ## Baseline File Structure
 
@@ -27,27 +27,29 @@ Defines tracking and gating for contract function gas usage.
 
 ## Open Items
 
-### Gas Extraction Parser Specification (Planned)
+### Gas Extraction Parser Specification (Current Heuristic)
 
-Extraction Source Options (choose available):
+Extraction currently parses lines of the form:
 
-1. snforge JSON output (preferred if stable): invoke `scarb test --json` or dedicated gas report command; parse emitted gas per test & map to function calls by pattern `fn <entry_point>`.
-2. Text output fallback: regex patterns capturing `gas_usage=` or similar tokens from verbose test runs.
+```
+test <module>::<name> ... ok (gas usage est.: <number>)
+```
+
+Mapping: specific test name substrings -> logical function bucket.
 
 Mapping Strategy:
 
-- Maintain allowlist: `set_prediction_inputs` -> `update_prediction` logical bucket; `execute_trade` direct.
+- Maintain allowlist in `extract_gas.py`: test substring `set_prediction_updates_composite` -> `update_prediction`; `execute_trade_threshold` -> `execute_trade`.
 - If multiple invocations per test, average all occurrences per function.
 - Ignore setup/constructor gas.
 
 Parser Steps:
 
-1. Run contract test suite with gas reporting flag (TBD flag; prototype with verbose output).
-2. Collect raw output to temp file.
-3. Attempt JSON decode; on failure fallback to regex line scan.
-4. Accumulate gas values per allowlisted function name.
-5. Write snapshot structure `{ generated_at, functions:[{name, avg_gas}] }`.
-6. Validate non-zero; emit FUNCTION_MISSING errors for any allowlisted names absent.
+1. Run contract test suite: `scarb test > test_output.txt`.
+2. Execute: `python scripts/contracts/extract_gas.py --input test_output.txt --out docs/perf/gas_snapshot.json --fail-on-missing`.
+3. Script scans for allowlisted test names, aggregates average gas.
+4. Writes snapshot structure `{ generated_at, functions:[{name, avg_gas}] }`.
+5. Comparison script `scripts/ci/compare_gas.py` enforces thresholds.
 
 Failure Modes & Handling:
 
@@ -68,6 +70,6 @@ Future Enhancements:
 
 ## Open Items
 
-- Implement instrumentation / extraction (replace placeholder zeros) — IN PROGRESS (spec above).
+- Implement instrumentation / extraction (replace placeholder zeros) — DONE (heuristic parser in place).
 - Add multi-percentile tracking (p50, p95) if variance observed.
 - Consider per-call-type baselines if execute_trade branches diverge.

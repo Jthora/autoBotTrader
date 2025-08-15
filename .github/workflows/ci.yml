@@ -67,8 +67,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Generate Gas Snapshot
-        run: python scripts/progress/gas_snapshot.py
+      - name: Install Scarb
+        run: |
+          curl -L https://scarb.sh/install | bash -s -- -y
+          echo "$HOME/.local/share/scarb/bin" >> $GITHUB_PATH
+      - name: Run Contract Tests (capture)
+        run: |
+          cd contracts
+          scarb test > ../test_output.txt 2>&1 || (echo 'contract tests failed'; tail -n 200 ../test_output.txt; exit 1)
+      - name: Extract Gas Snapshot
+        run: |
+          python scripts/contracts/extract_gas.py --input test_output.txt --out docs/perf/gas_snapshot.json --fail-on-missing
       - name: Compare Gas Baseline
         run: python scripts/ci/compare_gas.py
       - name: Upload Gas Snapshot
