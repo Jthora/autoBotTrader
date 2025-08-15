@@ -225,4 +225,6 @@ mod trading_bot {
         let ts: u64 = get_block_timestamp().into();
         self.emit(Event::TradeExecuted(TradeExecuted { trade_id, direction, amount, score: composite, timestamp: ts, improved_price_bps }));
     }
+
 }
+
