@@ -1,0 +1,78 @@
+name: CI Core
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python Lint
+        run: |
+          pip install ruff
+          ruff check .
+      - name: Go Vet
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - run: go vet ./...
+      - name: Frontend Lint
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          cd frontend || exit 0
+          npm ci
+          npx eslint . || true
+  contracts-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Scarb
+        run: |
+          curl -L https://scarb.sh/install | bash -s -- -y
+          echo "$HOME/.local/share/scarb/bin" >> $GITHUB_PATH
+      - name: Contract Tests
+        run: |
+          cd contracts
+          scarb test
+  test-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Go Tests (race + cover)
+        run: go test -race -cover ./api/...
+  bench-sample:
+    if: contains(github.event.pull_request.labels.*.name, 'run-bench')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Run Benchmarks
+        run: go test -run NONE -bench BenchmarkGTAB_Lookup -benchmem ./api/internal/ephem | tee bench.txt
+      - name: Compare Baseline
+        run: python scripts/ci/compare_bench.py --input bench.txt --baseline docs/perf/bench_baselines.json --out bench_results.json
+      - name: Upload Bench Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: bench_results.json
+  gas-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Gas Snapshot
+        run: python scripts/progress/gas_snapshot.py
+      - name: Compare Gas Baseline
+        run: python scripts/ci/compare_gas.py
+      - name: Upload Gas Snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: gas-snapshot
+          path: docs/perf/gas_snapshot.json

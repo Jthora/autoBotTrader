@@ -1,0 +1,351 @@
+# Canonical task graph for the project.
+# An agent should preserve ordering, update statuses, and may add subtasks with justification.
+# Fields:
+# id: unique slug
+# title: human-readable name
+# phase: roadmap phase reference
+# priority: lower = sooner
+# depends_on: list of task ids
+# status: PENDING|IN_PROGRESS|BLOCKED|IN_REVIEW|COMPLETE|DEFERRED
+# owner: optional (can be 'agent')
+# description: concise purpose
+# acceptance: bullet list of acceptance criteria
+# notes: free-form (agents append timestamped entries)
+
+version: 0.3
+updated: 2025-08-13T14:10:00Z
+
+tasks:
+  - id: scaffold-repo
+    title: Scaffold Repository Structure
+    phase: 0
+    priority: 1
+    depends_on: []
+    status: COMPLETE
+    owner: agent
+    description: Create initial directory tree per planning docs.
+    acceptance:
+      - Directories contracts/, api/, frontend/, tests/, scripts/, ml/ exist
+      - Root README references progress system
+    notes:
+      - "2025-08-10T00:05:00Z: Directories + initial skeletons (contract/api/frontend) added."
+
+  - id: contract-skeleton
+    title: Cairo Contract Skeleton
+    phase: 0
+    priority: 2
+    depends_on: [scaffold-repo]
+    status: COMPLETE
+    owner: agent
+    description: Add TradingBot.cairo with storage + basic events + init.
+    acceptance:
+      - Storage layout matches spec order
+      - compile succeeds
+    notes:
+      - "2025-08-10T15:40:00Z: Added access control, setters, cooldown & validation logic."
+      - "2025-08-10T16:05:00Z: Contract compiles successfully under Cairo 2.12 after event adjustments."
+
+  - id: contract-admin-access
+    title: Contract Admin & Access Functions
+    phase: 0
+    priority: 3
+    depends_on: [contract-skeleton]
+    status: COMPLETE
+    owner: agent
+    description: Implement threshold/cooldown/roles update + admin change events & weight validation asserts.
+    acceptance:
+      - update_threshold updates storage & emits ThresholdUpdated
+      - update_cooldown updates storage & emits CooldownUpdated
+      - set_roles updates pusher_role & ml_oracle & emits RolesUpdated
+      - change_admin sets new admin & emits AdminChanged
+      - All functions restricted to admin (roles as applicable)
+    notes:
+      - "2025-08-10T17:00:00Z: Created task to cover spec gap (spec lists these functions; not yet in contract)."
+      - "2025-08-10T17:07:00Z: Implemented admin functions (threshold, cooldown, roles, admin change) + events; pending decision on assert vs silent return."
+
+  - id: contract-tests
+    title: Contract Unit Tests
+    phase: 0
+    priority: 4
+    depends_on: [contract-skeleton, contract-admin-access]
+    status: IN_PROGRESS
+    owner: agent
+    description: Add snforge tests for prediction inputs, weights, access control, cooldown, ml score.
+    acceptance:
+      - Tests assert unauthorized calls fail
+      - Composite computation test passes for sample vectors
+      - Cooldown test ensures second immediate update blocked
+      - ML score update recomputes composite when ml_w>0
+    notes:
+      - "2025-08-10T17:00:00Z: Added to move contract-skeleton from IN_REVIEW to COMPLETE."
+  - "2025-08-14T00:00:00Z: Sized M (1.5–2.5d); helper harness + revert assertions pending."
+
+  - id: go-service-skeleton
+    title: Go Service Skeleton
+    phase: 0
+    priority: 5
+    depends_on: [scaffold-repo]
+    status: IN_PROGRESS
+    owner: agent
+    description: Initialize Go module and HTTP server with /health.
+    acceptance:
+      - go build success
+      - /health returns 200 JSON
+    notes:
+      - "2025-08-10T15:30:00Z: Added normalization helpers, mock providers, endpoints (/astrology /gravimetrics /predict)."
+
+  - id: frontend-scaffold
+    title: Frontend Vite Scaffold
+    phase: 0
+    priority: 6
+    depends_on: [scaffold-repo]
+    status: PENDING
+    owner: agent
+    description: Initialize Vite React TS app skeleton.
+    acceptance:
+      - npm build success
+      - App renders placeholder dashboard
+    notes: []
+
+  - id: prediction-inputs
+    title: Implement Prediction Inputs Logic
+    phase: 1
+    priority: 7
+    depends_on: [contract-skeleton, go-service-skeleton]
+    status: PENDING
+    owner: agent
+    description: set_prediction_inputs function + Go push endpoint.
+    acceptance:
+      - Unit tests pass for input validation
+      - Event PredictionUpdated emitted
+    notes: []
+
+  - id: go-chain-client
+    title: Go Starknet Chain Client
+    phase: 1
+    priority: 8
+    depends_on: [go-service-skeleton, contract-skeleton]
+    status: IN_PROGRESS
+    owner: agent
+    description: Implement real Starknet client for reading composite & sending set_prediction_inputs tx.
+    acceptance:
+      - Client method SendPredictionTx returns tx hash
+      - ENV config for RPC + keys loaded
+      - Basic integration test (mock / stub) passes
+    notes:
+      - "2025-08-10T17:00:00Z: Added to bridge API and contract before push integration."
+      - "2025-08-13T20:30:00Z: Added config loader, client interface, mock/real hybrid, tests, /push composite field."
+      - "2025-08-13T20:45:00Z: Identified remaining gaps (real tx + composite read); concurrency & gas placeholder tasks added separately."
+  - "2025-08-14T00:00:00Z: Sized M (1.5–2.5d); raw RPC invoke_function first milestone."
+  - id: grav-provider-race-guard
+    title: Grav Provider Concurrency Safety
+    phase: 0
+    priority: 22
+    depends_on: [go-service-skeleton]
+    status: IN_PROGRESS
+    owner: agent
+    description: Add mutex to FileGravimetric and race tests ensuring no data races.
+    acceptance:
+      - mutex guards stateful fields
+      - go test -race passes with new concurrent test
+      - task note added with rationale
+    notes:
+      - "2025-08-13T20:45:00Z: Task added after code review flagged potential race on lastBPS. Mutex + test implemented."
+  - "2025-08-13T22:10:00Z: Added extended hysteresis, clamping, dataset id tests (gravity_file_extra_test.go)."
+  - id: gas-extraction-impl
+    title: Gas Extraction Implementation
+    phase: 0
+    priority: 23
+    depends_on: [gas-governance, contract-skeleton]
+    status: PENDING
+    owner: agent
+    description: Replace placeholder zeros with real gas capture parsing snforge output.
+    acceptance:
+      - gas_snapshot records non-zero values
+      - CI fails if zeros remain (unless ALLOW_GAS_PLACEHOLDERS=1)
+      - docs updated to remove placeholder wording
+    notes:
+      - "2025-08-13T20:45:00Z: Added to close governance gap (currently zeros)."
+  - "2025-08-14T00:00:00Z: Sized S (0.5–1d); parser spec documented (JSON + regex fallback)."
+
+  - id: go-push-integration
+    title: Go Push Integration Endpoint
+    phase: 1
+    priority: 9
+    depends_on: [prediction-inputs, go-chain-client]
+    status: PENDING
+    owner: agent
+    description: /push constructs tx using chain client and returns hash.
+    acceptance:
+      - /push returns 200 with tx hash field
+      - Invalid scores rejected 4xx
+      - Emits PredictionUpdated on-chain (verified via event query stub/mock)
+    notes:
+      - "2025-08-10T17:00:00Z: Added to complete prediction flow."
+
+  - id: frontend-score-display
+    title: Frontend Score Display
+    phase: 1
+    priority: 10
+    depends_on: [frontend-scaffold, go-push-integration]
+    status: PENDING
+    owner: agent
+    description: Show current scores + composite.
+    acceptance:
+      - Polling updates visible
+    notes: []
+
+  - id: trading-execution
+    title: Trading Execution Logic
+    phase: 2
+    priority: 11
+    depends_on: [go-push-integration]
+    status: PENDING
+    owner: agent
+    description: execute_trade with threshold enforcement.
+    acceptance:
+      - Revert below threshold tested
+      - Successful trade emits event
+    notes: []
+
+  - id: weights-admin-ui
+    title: Weights & Threshold Admin UI
+    phase: 2
+    priority: 12
+    depends_on: [trading-execution, frontend-scaffold]
+    status: PENDING
+    owner: agent
+    description: Frontend controls for weights & threshold.
+    acceptance:
+      - Updates reflected on-chain
+    notes: []
+
+  - id: ml-hook
+    title: ML Score Hook
+    phase: 3
+    priority: 13
+    depends_on: [prediction-inputs]
+    status: PENDING
+    owner: agent
+    description: set_ml_score integrated & tests.
+    acceptance:
+      - Composite changes with ml_w>0
+    notes: []
+
+  - id: ml-placeholder-script
+    title: PPO Placeholder Script
+    phase: 3
+    priority: 14
+    depends_on: [ml-hook]
+    status: PENDING
+    owner: agent
+    description: Python script outputs dummy ml score.
+    acceptance:
+      - Runs and logs score 0-100
+    notes: []
+
+  - id: hardening
+    title: Gas & Security Hardening
+    phase: 4
+    priority: 15
+    depends_on: [trading-execution]
+    status: PENDING
+    owner: agent
+    description: Optimize storage writes, add access refinements.
+    acceptance:
+      - Gas snapshot stable/reduced
+      - Access tests pass
+    notes: []
+
+  - id: testnet-deploy
+    title: Testnet Deployment
+    phase: 5
+    priority: 16
+    depends_on: [hardening, frontend-score-display, weights-admin-ui]
+    status: PENDING
+    owner: agent
+    description: Deploy contract, service, frontend to testnet.
+    acceptance:
+      - Public addresses documented
+      - Frontend loads live data
+    notes: []
+
+  - id: roadmap-sync
+    title: Sync Roadmap & Task Graph
+    phase: 0
+    priority: 17
+    depends_on: [scaffold-repo]
+    status: PENDING
+    owner: agent
+    description: Ensure 11_roadmap.md phases align with tasks & update references.
+    acceptance:
+      - Cross-reference section added to roadmap
+    notes: []
+
+  - id: contract-consolidation
+    title: Prune & Consolidate Contract Sources
+    phase: 0
+    priority: 18
+    depends_on: [contract-skeleton]
+    status: COMPLETE
+    owner: agent
+    description: Remove obsolete TradingBot.cairo & compute.cairo (retain lib.cairo) or merge if divergence.
+    acceptance:
+      - Single canonical contract file documented
+      - Build & tests still pass
+    notes:
+      - "2025-08-10T19:15:00Z: Added after checkpoint audit to reduce confusion."
+      - "2025-08-11T00:10:00Z: Removed TradingBot.cairo & compute.cairo; build/tests green."
+
+  - id: ci-core
+    title: Core CI Pipeline
+    phase: 0
+    priority: 19
+    depends_on: [scaffold-repo, contract-skeleton, contract-admin-access]
+    status: IN_PROGRESS
+    owner: agent
+    description: Establish GitHub Actions CI (lint, tests, optional benches) with gating hooks.
+    acceptance:
+      - Go tests (race) run & pass in CI
+      - Contract tests run & pass in CI
+      - Lint passes (golangci-lint/go vet, scarb fmt --check, eslint + tsc --noEmit)
+      - Optional benchmark job compares against docs/perf/bench_baselines.json when label present
+      - Bench regression (>2x ns/op or +500ns) causes failure
+    notes:
+      - "2025-08-13T12:00:00Z: Initial workflow added (go tests + bench compare scaffold)."
+      - "2025-08-13T13:30:00Z: Expanded to include lint + contracts + gas snapshot scaffolds."
+
+  - id: accuracy-harness
+    title: Ephemeris Accuracy Harness
+    phase: 0
+    priority: 20
+    depends_on: [ci-core]
+    status: IN_PROGRESS
+    owner: agent
+    description: Nightly job computing ephemeris accuracy metrics with kernel integrity + thresholds.
+    acceptance:
+      - compute_metrics.py outputs metrics.json (median & p99 errors + peak drift) with passes flag
+      - Threshold breach causes CI nightly failure
+      - Kernel hash verification implemented (hash manifest present)
+      - Kernel caching / reuse documented & implemented in workflow
+    notes:
+      - "2025-08-13T12:00:00Z: Initial harness script + nightly workflow skeleton committed."
+      - "2025-08-13T13:30:00Z: Added kernel verify scaffold; caching still TODO."
+  - "2025-08-13T20:05:00Z: Added fetch_kernel caching script + verify --update mode; CI workflow doc updated."
+
+  - id: gas-governance
+    title: Gas Snapshot & Governance
+    phase: 0
+    priority: 21
+    depends_on: [ci-core, contract-skeleton]
+    status: IN_PROGRESS
+    owner: agent
+    description: Extract per-function gas usage, compare to baselines, gate regressions.
+    acceptance:
+      - gas_snapshot script produces non-zero values for update_prediction & execute_trade
+      - compare_gas script fails CI if >5% regression without ADR reference token
+      - Baseline update protocol documented (GAS_BASELINES.md) and followed on change
+      - Snapshot & baseline JSON validated in CI
+    notes:
+      - "2025-08-13T13:30:00Z: Baseline & snapshot scaffolds added with placeholder zeros; extraction pending."
+  - "2025-08-13T22:12:00Z: Enforcement added to gas_snapshot.py (fails on zero placeholders unless ALLOW_GAS_PLACEHOLDERS). Basic test harness implemented."

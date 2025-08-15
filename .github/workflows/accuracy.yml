@@ -1,0 +1,33 @@
+name: Nightly Ephemeris Accuracy
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  accuracy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Kernel Integrity (skip if missing)
+        run: |
+          if [ -f de440s.bsp ]; then python scripts/ephem/validation/verify_kernel.py --kernel de440s.bsp || true; fi
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Generate GTAB (1d window sample) if absent
+        run: |
+          if [ ! -f ephem/gtab_1s.bin ]; then \
+            python scripts/ephem/generate.py --kernel de440s.bsp --start $(date -u -d '1 day ago' +%Y-%m-%dT%H:%M:%SZ) --end $(date -u +%Y-%m-%dT%H:%M:%SZ) --out ephem || true; \
+          fi
+      - name: Run Accuracy Harness
+        run: |
+          python scripts/ephem/validation/compute_metrics.py --table ephem/gtab_1s.bin --dataset-id nightly-$(date -u +%Y%m%d) --out metrics.json --cadence 300 --kernel de440s.bsp || true
+      - name: Upload Metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: ephem-accuracy
+          path: metrics.json

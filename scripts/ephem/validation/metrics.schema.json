@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EphemerisAccuracyMetrics",
+  "type": "object",
+  "required": [
+    "dataset_id",
+    "generated_at",
+    "range",
+    "cadence_seconds",
+    "samples",
+    "error_basis",
+    "stats",
+    "thresholds",
+    "passes"
+  ],
+  "properties": {
+    "dataset_id": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "range": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }
+      }
+    },
+    "cadence_seconds": { "type": "integer", "minimum": 1 },
+    "samples": { "type": "integer", "minimum": 1 },
+    "error_basis": { "type": "string" },
+    "stats": {
+      "type": "object",
+      "required": [
+        "rel_error_median",
+        "rel_error_p95",
+        "rel_error_p99",
+        "peak_drift_seconds_median",
+        "peak_drift_seconds_p99"
+      ],
+      "properties": {
+        "rel_error_median": { "type": "number", "minimum": 0 },
+        "rel_error_p95": { "type": "number", "minimum": 0 },
+        "rel_error_p99": { "type": "number", "minimum": 0 },
+        "peak_drift_seconds_median": { "type": "number", "minimum": 0 },
+        "peak_drift_seconds_p99": { "type": "number", "minimum": 0 }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "rel_error_median_max",
+        "rel_error_p99_max",
+        "peak_drift_seconds_p99_max"
+      ],
+      "properties": {
+        "rel_error_median_max": { "type": "number", "minimum": 0 },
+        "rel_error_p99_max": { "type": "number", "minimum": 0 },
+        "peak_drift_seconds_p99_max": { "type": "number", "minimum": 0 }
+      }
+    },
+    "passes": { "type": "boolean" },
+    "notes": { "type": "string" }
+  }
+}

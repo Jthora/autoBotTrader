@@ -1,0 +1,40 @@
+# General
+*.log
+*.tmp
+*.swp
+*.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node / Frontend
+node_modules/
+dist/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Go
+bin/
+coverage.out
+
+# Cairo / Starknet
+target/
+scarb.lock
+
+# VS Code
+.vscode/*.db
+
+# Environment / secrets (never commit real keys)
+.env
+.env.*
+
+# Mac
+.DS_Store
+
+# Generated docs artifacts (optional keep only source)
+docs/**/site/

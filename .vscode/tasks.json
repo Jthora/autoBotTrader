@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Progress: Validate & Update",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/progress/update_progress.py", "--summary", "--write"],
+      "problemMatcher": []
+    },
+    {
+      "label": "API: Test (race)",
+      "type": "shell",
+      "command": "go",
+      "options": { "cwd": "${workspaceFolder}/api" },
+      "args": ["test", "-race", "./..."],
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "API: Run (mock)",
+      "type": "shell",
+      "command": "go",
+      "options": { "cwd": "${workspaceFolder}" },
+      "args": ["run", "./api/cmd/server"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "API: Run (file mode)",
+      "type": "shell",
+      "command": "bash",
+      "options": { "cwd": "${workspaceFolder}/api" },
+      "args": ["-lc", "EPHEM_MODE=file API_PORT=8080 go run ./cmd/server"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Dev",
+      "type": "shell",
+      "command": "npm",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "args": ["run", "dev"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Contracts: Test",
+      "type": "shell",
+      "command": "scarb",
+      "options": { "cwd": "${workspaceFolder}/contracts" },
+      "args": ["test"],
+      "problemMatcher": []
+    }
+  ]
+}

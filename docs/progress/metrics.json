@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "last_updated": "2025-08-14T04:50:54.898558+00:00",
+  "contract": {
+    "compiled": false,
+    "tests_passed": 0,
+    "coverage_pct": 0,
+    "avg_gas_prediction_update": 0,
+    "avg_gas_execute_trade": 0
+  },
+  "go_service": {
+    "build_ok": false,
+    "tests_passed": 0,
+    "coverage_pct": 0
+  },
+  "frontend": {
+    "build_ok": false,
+    "tests_passed": 0,
+    "coverage_pct": 0
+  },
+  "tasks": {
+    "total": 23,
+    "complete": 4,
+    "in_progress": 7,
+    "blocked": 0
+  }
+}

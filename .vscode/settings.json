@@ -1,0 +1,17 @@
+{
+  "files.eol": "\n",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "python.analysis.typeCheckingMode": "basic",
+  "go.toolsManagement.autoUpdate": true,
+  "eslint.enable": true,
+  "yaml.validate": true,
+  "cSpell.words": [
+    "ml_oracle",
+    "mlscore",
+    "gravimetrics",
+    "scarb",
+    "starknet",
+    "cheatcode"
+  ]
+}

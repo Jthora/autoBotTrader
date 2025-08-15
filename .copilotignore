@@ -1,0 +1,10 @@
+# Large or low-signal files to reduce Copilot context noise
+docs/progress/metrics.json
+docs/progress/status_log.md
+docs/progress/task_graph.yaml
+docs/progress/decisions.md
+docs/initialPlan/*.md
+coverage/**
+node_modules/**
+dist/**
+target/**

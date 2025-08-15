@@ -1,0 +1,16 @@
+{
+  "captured_at": "2025-08-13T00:00:00Z",
+  "threshold_percent": 5.0,
+  "functions": [
+    {
+      "name": "update_prediction",
+      "avg_gas": 0,
+      "notes": "Populate after real measurement"
+    },
+    {
+      "name": "execute_trade",
+      "avg_gas": 0,
+      "notes": "Populate after real measurement"
+    }
+  ]
+}

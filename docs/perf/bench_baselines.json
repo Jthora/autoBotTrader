@@ -1,0 +1,20 @@
+{
+  "captured_at": "2025-08-13T00:00:00Z",
+  "go_version": "1.21.x",
+  "benchmarks": [
+    {
+      "name": "BenchmarkGTAB_Lookup",
+      "ns_per_op": 451,
+      "bytes_per_op": 0,
+      "allocs_per_op": 0,
+      "rationale": "Initial baseline after optimization pass"
+    },
+    {
+      "name": "BenchmarkFileGravimetricFetch",
+      "ns_per_op": 853,
+      "bytes_per_op": 0,
+      "allocs_per_op": 0,
+      "rationale": "Includes meta/stale evaluation"
+    }
+  ]
+}

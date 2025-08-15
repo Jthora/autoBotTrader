@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "starkware.cairo1",
+    "ms-python.python",
+    "golang.go",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "github.vscode-github-actions",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

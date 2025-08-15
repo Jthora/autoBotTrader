@@ -1,0 +1,13 @@
+{
+  "generated_at": "2025-08-15T02:26:07.661066+00:00",
+  "functions": [
+    {
+      "name": "update_prediction",
+      "avg_gas": 0
+    },
+    {
+      "name": "execute_trade",
+      "avg_gas": 5000
+    }
+  ]
+}

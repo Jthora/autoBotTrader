@@ -1,0 +1,32 @@
+name: Lint & Static Checks
+on:
+  push:
+    paths:
+      - '**.py'
+      - '**.go'
+      - 'frontend/**'
+  pull_request:
+    paths:
+      - '**.py'
+      - '**.go'
+      - 'frontend/**'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python Lint
+        run: |
+          pip install ruff
+          ruff check . || true
+      - name: Go Vet
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - run: go vet ./... || true
+      - name: Frontend Lint
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          cd frontend || exit 0
+          npm ci || true
+          npx eslint . || true

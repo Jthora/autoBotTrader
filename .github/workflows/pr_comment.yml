@@ -1,0 +1,21 @@
+name: PR Progress Comment
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyyaml
+      - id: gen
+        run: |
+          python scripts/progress/update_progress.py --write
+          python scripts/progress/pr_comment.py > pr_comment.md
+      - name: Create or update comment
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: pr_comment.md
