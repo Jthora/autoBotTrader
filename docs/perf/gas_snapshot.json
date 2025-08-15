@@ -1,13 +1,13 @@
 {
-  "generated_at": "2025-08-15T02:26:07.661066+00:00",
+  "generated_at": "2025-08-15T22:53:19.474928Z",
   "functions": [
     {
       "name": "update_prediction",
-      "avg_gas": 0
+      "avg_gas": 1800
     },
     {
       "name": "execute_trade",
-      "avg_gas": 5000
+      "avg_gas": 7770
     }
   ]
 }

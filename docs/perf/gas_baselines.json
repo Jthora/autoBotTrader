@@ -1,16 +1,16 @@
 {
-  "captured_at": "2025-08-13T00:00:00Z",
+  "captured_at": "2025-08-15T22:53:19.474928Z",
   "threshold_percent": 5.0,
   "functions": [
     {
       "name": "update_prediction",
-      "avg_gas": 0,
-      "notes": "Populate after real measurement"
+      "avg_gas": 1800,
+      "notes": "Initial extracted baseline from simulation harness mapping"
     },
     {
       "name": "execute_trade",
-      "avg_gas": 0,
-      "notes": "Populate after real measurement"
+      "avg_gas": 7770,
+      "notes": "Initial extracted baseline from simulation harness mapping"
     }
   ]
 }
