@@ -73,3 +73,4 @@ Future Enhancements:
 - Implement instrumentation / extraction (replace placeholder zeros) — DONE (heuristic parser in place).
 - Add multi-percentile tracking (p50, p95) if variance observed.
 - Consider per-call-type baselines if execute_trade branches diverge.
+- Add true devnet fee estimation (declare/deploy + fee estimate) — INITIAL SCRIPT ADDED (`scripts/contracts/devnet_fee_estimate.py`).

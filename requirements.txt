@@ -3,3 +3,5 @@ skyfield>=1.48
 jplephem>=2.21
 numpy>=1.26
 pytest>=8.2
+starknet-py>=0.21.0
+requests>=2.31

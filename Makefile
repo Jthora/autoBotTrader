@@ -1,6 +1,6 @@
 # Unified developer workflows
 
-.PHONY: help all test api-test api-run api-run-file contracts-test frontend-dev lint ephem-generate tidy gas-snapshot gas-compare
+.PHONY: help all test api-test api-run api-run-file contracts-test frontend-dev lint ephem-generate tidy gas-snapshot gas-compare gas-devnet-fees
 
 help:
 	@echo 'Common targets:'
@@ -12,6 +12,7 @@ help:
 	@echo '  make frontend-dev      - start frontend Vite dev server'
 	@echo '  make gas-snapshot      - run cairo tests, extract gas snapshot'
 	@echo '  make gas-compare       - compare snapshot against baselines'
+	@echo '  make gas-devnet-fees   - run devnet fee estimation (requires running devnet)'
 	@echo '  make ephem-generate    - generate GTAB datasets (see scripts/ephem)'
 	@echo '  make tidy              - go mod tidy for api'
 
@@ -41,6 +42,11 @@ gas-snapshot:
 
 gas-compare:
 	python scripts/ci/compare_gas.py
+
+gas-devnet-fees:
+	@if ! docker ps --format '{{.Names}}' | grep -q '^starknet-devnet-local$$'; then echo 'Devnet container not running (start with ./scripts/contracts/devnet_local.sh)'; exit 1; fi
+	cd contracts && scarb build
+	python scripts/contracts/devnet_fee_estimate.py
 
 frontend-dev:
 	cd frontend && npm run dev
